@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "greeting.username1=Harry")
+        properties = "greeting.username=Harry")
 class GreetingControllerIT {
 
     private static final String ENDPOINT_GREETING = "/api/v1/greeting";

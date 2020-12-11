@@ -60,6 +60,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Output settings.xml
+        run: cat ~/.m2/settings.xml
+
       - name: Package
         run: mvn -B clean package -DskipTests=true
 
