@@ -27,24 +27,7 @@ jobs:
         run: mvn -B -V clean compile
 
       - name: Test
-        run: mvn -B -V org.jacoco:jacoco-maven-plugin:prepare-agent verify org.jacoco:jacoco-maven-plugin:report
-          -Dmaven.test.failure.ignore=true
-
-      - name: Code coverage conversion
-        uses: danielpalme/ReportGenerator-GitHub-Action@4.8.1
-        with:
-          reports: '**/jacoco/jacoco.xml'
-          targetdir: 'target/coverage-report'
-          reporttypes: 'lcov'
-          verbosity: 'Info' # The verbosity level of the log messages. Values: Verbose, Info, Warning, Error, Off
-          title: 'Coverage Report'
-          tag: '${{ github.run_number }}_${{ github.run_id }}' # Optional tag or build version.
-
-      - name: Publish code coverage
-        uses: romeovs/lcov-reporter-action@v0.2.16
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: target/coverage-report/lcov.info
+        run: mvn -B -V verify -Dmaven.test.failure.ignore=true
 
       - name: Publish test report
         uses: scacap/action-surefire-report@v1
@@ -53,7 +36,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_test_failures: true
           # commit: TODO check whether it's acceptable to use workflow_run
-
   publish:
     runs-on: ubuntu-latest
     needs: [ build ]
