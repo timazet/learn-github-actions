@@ -15,7 +15,6 @@ jobs:
           server-username: MAVEN_USERNAME # env variable for username in deploy
           server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-          settings-path: settings.xml
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -25,10 +24,10 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Compile
-        run: mvn -B -V -s settings.xml clean compile
+        run: mvn -B -V clean compile
 
       - name: Test
-        run: mvn -B -V -s settings.xml verify -Dmaven.test.failure.ignore=true
+        run: mvn -B -V verify -Dmaven.test.failure.ignore=true
 
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
@@ -53,7 +52,7 @@ jobs:
           server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
           # gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-          settings-path: settings.xml
+          settings-path: ${{ github.workspace }}
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -66,10 +65,10 @@ jobs:
         run: cat ~/.m2/settings.xml
 
       - name: Output settings.xml
-        run: cat settings.xml
+        run: cat $GITHUB_WORKSPACE/settings.xml
 
       - name: Package
-        run: mvn -B -s settings.xml clean package -DskipTests=true
+        run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
