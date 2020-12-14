@@ -1,12 +1,10 @@
 package com.github.timazet.greeting.controller;
 
+import com.github.timazet.greeting.config.GreetingProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.stereotype.Controller;
-
-import com.github.timazet.greeting.config.GreetingProperties;
 
 @RestController
 public class GreetingController {
