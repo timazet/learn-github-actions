@@ -43,6 +43,7 @@ jobs:
       - name: Publish test report
         uses: scacap/action-surefire-report@v1
         with:
+          check_name: Test Report
           report_paths: '**/*-reports/TEST-*.xml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_test_failures: true
