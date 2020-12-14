@@ -23,11 +23,21 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Validate
+        run: mvn -B -V clean validate -Dcheckstyle.failOnViolation=true
+
+      - name: Publish checkstyle report
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@v1.2
+        with:
+          path: '**/checkstyle-result.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Compile
-        run: mvn -B -V clean compile
+        run: mvn -B -V compile -Dcheckstyle.skip=true
 
       - name: Test
-        run: mvn -B -V verify -Dmaven.test.failure.ignore=true
+        run: mvn -B -V verify -Dmaven.test.failure.ignore=true -Dcheckstyle.skip=true
 
       - name: Publish test report
         uses: scacap/action-surefire-report@v1
@@ -62,7 +72,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Package
-        run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true
+        run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
