@@ -30,6 +30,7 @@ jobs:
         if: always()
         uses: jwgmeligmeyling/checkstyle-github-action@v1.2
         with:
+          name: Checkstyle Report
           path: '**/checkstyle-result.xml'
           token: ${{ secrets.GITHUB_TOKEN }}
 
