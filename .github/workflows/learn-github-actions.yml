@@ -141,6 +141,7 @@ jobs:
           release_branches: master
           default_bump: false
           custom_tag: v${{ steps.version-extraction.outputs.artifact_version }}
+          dry_run: true
 
       - name: Create release
         uses: actions/create-release@v1
