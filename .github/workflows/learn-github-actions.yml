@@ -134,22 +134,19 @@ jobs:
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
 
       - name: Create tag
-        id: tag-creation
-        uses: mathieudutour/github-tag-action@v5.1
+        uses: negz/create-tag@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          release_branches: master
-          default_bump: false
-          custom_tag: v${{ steps.version-extraction.outputs.artifact_version }}
-          dry_run: true
+          version: v${{ steps.version-extraction.outputs.artifact_version }}
+          message: Release v${{ steps.version-extraction.outputs.artifact_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag-creation.outputs.new_tag }}
-          release_name: Release ${{ steps.tag-creation.outputs.new_tag }}
+          tag_name: v${{ steps.version-extraction.outputs.artifact_version }}
+          release_name: Release v${{ steps.version-extraction.outputs.artifact_version }}
           body: TODO
           draft: true
           prerelease: false
@@ -159,4 +156,4 @@ jobs:
         with:
           files: 'target/*.jar;target/*.jar.original'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ steps.tag-creation.outputs.new_tag }}
+          release-tag: v${{ steps.version-extraction.outputs.artifact_version }}
