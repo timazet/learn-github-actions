@@ -133,13 +133,6 @@ jobs:
       - name: Package
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
 
-      - name: Create tag
-        uses: negz/create-tag@v1
-        with:
-          version: v${{ steps.version-extraction.outputs.artifact_version }}
-          message: Release v${{ steps.version-extraction.outputs.artifact_version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create release
         uses: actions/create-release@v1
         env:
