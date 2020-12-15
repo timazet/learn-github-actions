@@ -1,8 +1,7 @@
 name: learn-github-actions
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
   workflow_dispatch:
 jobs:
@@ -16,10 +15,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.11
-          server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
-          server-username: MAVEN_USERNAME # env variable for username in deploy
-          server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -78,6 +73,18 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      - name: Version extraction
+        id: version-extraction
+        run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
+      - name: Snapshot
+        if: success() && endsWith(steps.version-extraction.outputs.artifact_version, '-SNAPSHOT')
+        run: echo "Snapshot version is following - ${{ steps.version-extraction.outputs.artifact_version }}"
+
+      - name: Final
+        if: success() && !(endsWith(steps.version-extraction.outputs.artifact_version, '-SNAPSHOT'))
+        run: echo "Final version is following - ${{ steps.version-extraction.outputs.artifact_version }}"
 
       - name: Package
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
