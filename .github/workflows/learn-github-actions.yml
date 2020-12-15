@@ -87,8 +87,12 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Version extraction
+        id: version-extraction
+        run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
       - name: Snapshot
-        run: echo "Snapshot version is following - ${{ needs.build.outputs.artifact_version }}"
+        run: echo "Snapshot version is following - ${{ steps.version-extraction.outputs.artifact_version }}"
 
       - name: Package
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
@@ -119,25 +123,32 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Version extraction
+        id: version-extraction
+        run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
       - name: Final
-        run: echo "Final version is following - ${{ needs.build.outputs.artifact_version }}"
+        run: echo "Final version is following - ${{ steps.version-extraction.outputs.artifact_version }}"
 
       - name: Package
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
 
-      - name: Push tag
-        uses: ChloePlanet/github-tag-action@2.0.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CUSTOM_TAG: v${{ needs.build.outputs.artifact_version }}
+      - name: Create tag
+        id: tag-creation
+        uses: mathieudutour/github-tag-action@v5.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: master
+          default_bump: false
+          custom_tag: v${{ steps.version-extraction.outputs.artifact_version }}
 
       - name: Create release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ needs.build.outputs.artifact_version }}
-          release_name: Release v${{ needs.build.outputs.artifact_version }}
+          tag_name: ${{ steps.tag-creation.outputs.new_tag }}
+          release_name: Release ${{ steps.tag-creation.outputs.new_tag }}
           body: TODO
           draft: true
           prerelease: false
@@ -147,4 +158,4 @@ jobs:
         with:
           files: 'target/*.jar;target/*.jar.original'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: v${{ needs.build.outputs.artifact_version }}
+          release-tag: ${{ steps.tag-creation.outputs.new_tag }}
