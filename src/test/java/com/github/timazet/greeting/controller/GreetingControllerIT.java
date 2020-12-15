@@ -23,7 +23,7 @@ class GreetingControllerIT {
     @Test
     void shouldHaveCorrectResponseStructureWhenGetGreetingCalled() {
         //given
-        String expectedResponse = "Hello from Harry";
+        String expectedResponse = "Hello from Harry1";
 
         //when
         ResponseEntity<String> response = restTemplate.getForEntity(ENDPOINT_GREETING, String.class);
