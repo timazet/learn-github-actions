@@ -46,8 +46,9 @@ jobs:
         run: mvn -B -V clean validate -Dcheckstyle.failOnViolation=true
 
       - name: Publish checkstyle report
-        if: always()
-        uses: jwgmeligmeyling/checkstyle-github-action@v1.2
+        if: always() # in order to publish report even if previous step is failed
+        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        uses: jwgmeligmeyling/checkstyle-github-action@50292990e18466f2c5d95d04ff5fab931254fa5f
         with:
           name: Checkstyle Report
           path: '**/checkstyle-result.xml'
@@ -60,6 +61,7 @@ jobs:
         run: mvn -B -V verify -Dmaven.test.failure.ignore=true -Dcheckstyle.skip=true
 
       - name: Publish test report
+        # use sha commit references in order to reduce security issues related to unverified actions and their creators
         uses: scacap/action-surefire-report@v1
         with:
           check_name: Test Report
@@ -81,7 +83,7 @@ jobs:
         run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
     outputs:
       # output parameter that is required for further usage in dependent (downstream) jobs
-      artifact_version: ${{ steps.version-extraction.artifact_version }}
+      artifact_version: ${{ steps.version-extraction.outputs.artifact_version }}
 
   publish-snapshot:
     needs: [ build ]
