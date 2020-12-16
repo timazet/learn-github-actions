@@ -25,7 +25,7 @@ jobs:
         # don't cache .m2 directory in order to reduce security issues related to "pull_request_target" event
         # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
         # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
-        if: github.event_name == 'pull_request_target'
+        if: github.event_name != 'pull_request_target'
         uses: actions/cache@v2
         with:
           path: ~/.m2
