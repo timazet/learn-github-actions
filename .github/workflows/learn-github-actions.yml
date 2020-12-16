@@ -2,12 +2,16 @@ name: learn-github-actions
 on:
   push:
     branches: [ master ]
+  # provides an ability to run workflows against pull requests from forks with token that has read and write access
+  # in order to add comments on PR
+  # workflow code is used from trusted source (target repository)
   pull_request_target:
   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # checkout pull-request head reference with required security restrictions in case of "pull_request_target" event
       - name: Checkout PR
         if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v2
@@ -18,6 +22,7 @@ jobs:
           # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
           persist-credentials: false
 
+      # checkout commit reference not related to pull request in case of "pull_request_target" event absence
       - name: Checkout
         if: github.event_name != 'pull_request_target'
         uses: actions/checkout@v2
@@ -27,10 +32,10 @@ jobs:
         with:
           java-version: 1.11
 
+      # don't cache .m2 directory in order to reduce security issues related to "pull_request_target" event
+      # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+      # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
       - name: Cache Maven packages
-        # don't cache .m2 directory in order to reduce security issues related to "pull_request_target" event
-        # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
-        # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
         if: github.event_name != 'pull_request_target'
         uses: actions/cache@v2
         with:
@@ -81,9 +86,11 @@ jobs:
 
   publish-snapshot:
     needs: [ build ]
-    # runs only in case if the event is triggered against secure environment (master branch) and
+    # runs only if the event is triggered against secure environment ("master" branch) and
     # produced artifact version is related to SNAPSHOT
-    if: github.ref == 'refs/heads/master' && endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    if: >
+      github.ref == 'refs/heads/master' && github.action_name == 'push' &&
+      endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -118,9 +125,11 @@ jobs:
 
   publish-final:
     needs: [ build ]
-    # runs only in case if the event is triggered against secure environment (master branch) and
+    # runs only if the event is triggered against secure environment ("master" branch) and
     # produced artifact version is final
-    if: github.ref == 'refs/heads/master' && !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    if: >
+      github.ref == 'refs/heads/master' && github.action_name == 'push' &&
+      !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
