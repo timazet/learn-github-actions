@@ -62,7 +62,7 @@ jobs:
 
       - name: Publish test report
         # use sha commit references in order to reduce security issues related to unverified actions and their creators
-        uses: scacap/action-surefire-report@v1
+        uses: scacap/action-surefire-report@ad808943e6bfbd2e6acba7c53fdb5c89534da533
         with:
           check_name: Test Report
           report_paths: '**/*-reports/TEST-*.xml'
@@ -149,6 +149,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      # TODO add validation to check whether this tag is already submitted or not?
       - name: Version details
         run: echo "Artifact version to publish - ${{ needs.build.outputs.artifact_version }}"
 
@@ -156,7 +157,8 @@ jobs:
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
 
       - name: Create release
-        uses: xresloader/upload-to-github-release@v1
+        # use sha commit references in order to reduce security issues related to unverified actions and their creators
+        uses: xresloader/upload-to-github-release@3ad14478ee4fb9bd65e84c6d496a7d6862892f43
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
