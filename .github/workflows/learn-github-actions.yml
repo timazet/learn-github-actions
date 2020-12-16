@@ -3,8 +3,7 @@ on:
   push:
     branches: [ master ]
   # provides an ability to run workflows against pull requests from forks with token that has read and write access
-  # in order to add comments on PR
-  # workflow code is used from trusted source (target repository)
+  # in order to add comments on PR (https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target)
   pull_request_target:
   workflow_dispatch:
 jobs:
@@ -112,13 +111,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      # TODO decide whether it is required or not (needs.build.outputs.artifact_version can be used)
-      - name: Version extraction
-        id: version-extraction
-        run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
-
-      - name: Snapshot
-        run: echo "Snapshot version is following - ${{ steps.version-extraction.outputs.artifact_version }}"
+      - name: Version details
+        run: echo "Artifact version to publish - ${{ needs.build.outputs.artifact_version }}"
 
       - name: Package
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
@@ -153,13 +147,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      # TODO decide whether it is required or not (needs.build.outputs.artifact_version can be used)
-      - name: Version extraction
-        id: version-extraction
-        run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
-
-      - name: Final
-        run: echo "Final version is following - ${{ steps.version-extraction.outputs.artifact_version }}"
+      - name: Version details
+        run: echo "Artifact version to publish - ${{ needs.build.outputs.artifact_version }}"
 
       - name: Package
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
@@ -171,7 +160,7 @@ jobs:
         with:
           file: "target/greeting-service-*.jar;target/greeting-service-*.jar.original"
           delete_file: "greeting-service-*"
-          tag_name: v${{ steps.version-extraction.outputs.artifact_version }}
+          tag_name: v${{ needs.build.outputs.artifact_version }}
           draft: true
           overwrite: true
           verbose: true
