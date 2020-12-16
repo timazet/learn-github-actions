@@ -156,6 +156,7 @@ jobs:
         with:
           file: "target/greeting-service-*.jar;target/greeting-service-*.jar.original"
           delete_file: "greeting-service-*"
-          draft: true
           tag_name: v${{ steps.version-extraction.outputs.artifact_version }}
+          draft: true
+          overwrite: true
           verbose: true
