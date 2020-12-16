@@ -2,7 +2,7 @@ name: learn-github-actions
 on:
   push:
     branches: [ master ]
-  pull_request:
+  pull_request_target:
   workflow_dispatch:
 jobs:
   build:
@@ -10,6 +10,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          # don't persists credentials in order to reduce security issues related to "pull_request_target" event
+          # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+          # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+          persist-credentials: false
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
@@ -17,6 +22,10 @@ jobs:
           java-version: 1.11
 
       - name: Cache Maven packages
+        # don't cache .m2 directory in order to reduce security issues related to "pull_request_target" event
+        # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
+        # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+        if: github.event_name == 'pull_request_target'
         uses: actions/cache@v2
         with:
           path: ~/.m2
@@ -61,12 +70,15 @@ jobs:
         id: version-extraction
         run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
     outputs:
+      # output parameter that is required for further usage in dependent (downstream) jobs
       artifact_version: ${{ steps.version-extraction.artifact_version }}
 
   publish-snapshot:
     needs: [ build ]
-    runs-on: ubuntu-latest
+    # runs only in case if the event is triggered against secure environment (master branch) and
+    # produced artifact version is related to SNAPSHOT
     if: github.ref == 'refs/heads/master' && endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -75,10 +87,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.11
-          server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
+          server-id: ossrh # value of the distributionManagement/repository/id field of the pom.xml
           server-username: MAVEN_USERNAME # env variable for username in deploy
           server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
-          settings-path: ${{ github.workspace }}
+          settings-path: ${{ github.workspace }} # store not in a default location to not overwrite by cache restoring
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -87,6 +99,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      # TODO decide whether it is required or not (needs.build.outputs.artifact_version can be used)
       - name: Version extraction
         id: version-extraction
         run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
@@ -99,8 +112,10 @@ jobs:
 
   publish-final:
     needs: [ build ]
-    runs-on: ubuntu-latest
+    # runs only in case if the event is triggered against secure environment (master branch) and
+    # produced artifact version is final
     if: github.ref == 'refs/heads/master' && !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -109,12 +124,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.11
-          server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
+          server-id: ossrh # value of the distributionManagement/repository/id field of the pom.xml
           server-username: MAVEN_USERNAME # env variable for username in deploy
           server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
-          # gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+          # gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-          settings-path: ${{ github.workspace }}
+          settings-path: ${{ github.workspace }} # store not in a default location to not overwrite by cache restoring
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -123,6 +138,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      # TODO decide whether it is required or not (needs.build.outputs.artifact_version can be used)
       - name: Version extraction
         id: version-extraction
         run: echo "::set-output name=artifact_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
@@ -143,10 +159,3 @@ jobs:
           body: TODO
           draft: true
           prerelease: false
-
-      - name: Upload release artifacts
-        uses: AButler/upload-release-assets@v2.0
-        with:
-          files: 'target/*.jar;target/*.jar.original'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: v${{ steps.version-extraction.outputs.artifact_version }}
