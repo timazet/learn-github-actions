@@ -150,12 +150,12 @@ jobs:
         run: mvn -B -V -s $GITHUB_WORKSPACE/settings.xml clean package -DskipTests=true -Dcheckstyle.skip=true
 
       - name: Create release
-        uses: actions/create-release@v1
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.version-extraction.outputs.artifact_version }}
-          release_name: Release v${{ steps.version-extraction.outputs.artifact_version }}
-          body: TODO
+          file: "target/greeting-service-*.jar;target/greeting-service-*.jar.original"
+          delete_file: "greeting-service-*"
           draft: true
-          prerelease: false
+          tag_name: v${{ steps.version-extraction.outputs.artifact_version }}
+          verbose: true
