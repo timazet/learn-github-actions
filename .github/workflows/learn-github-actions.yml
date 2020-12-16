@@ -162,8 +162,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: "target/greeting-service-*.jar;target/greeting-service-*.jar.original"
-          delete_file: "greeting-service-*"
+          file: target/greeting-service-*.jar;target/greeting-service-*.jar.original
+          delete_file: greeting-service-*
           tag_name: v${{ needs.build.outputs.artifact_version }}
           draft: true
           overwrite: true
