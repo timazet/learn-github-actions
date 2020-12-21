@@ -1,11 +1,3 @@
-# Used Github Actions:
-# - Checkout - https://github.com/marketplace/actions/checkout
-# - Setup Java JDK - https://github.com/marketplace/actions/setup-java-jdk
-# - Cache - https://github.com/marketplace/actions/cache
-# - Push Checkstyle report - https://github.com/marketplace/actions/push-checkstyle-report
-# - Surefire Report - https://github.com/marketplace/actions/surefire-report
-# - Upload a Build Artifact - https://github.com/marketplace/actions/upload-a-build-artifact
-# - Upload To Github Release - https://github.com/marketplace/actions/upload-to-github-release
 name: CI
 on:
   push:
