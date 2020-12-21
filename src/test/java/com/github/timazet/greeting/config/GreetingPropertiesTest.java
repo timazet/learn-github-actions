@@ -23,7 +23,7 @@ class GreetingPropertiesTest {
         Set<ConstraintViolation<GreetingProperties>> violations = validator.validate(properties);
 
         //then
-        assertThat(violations).hasSize(1)
+        assertThat(violations).hasSize(2)
                 .anySatisfy(violation -> {
                     assertThat(violation.getInvalidValue()).isEqualTo(null);
                     assertThat(violation.getPropertyPath()).hasToString("username");
