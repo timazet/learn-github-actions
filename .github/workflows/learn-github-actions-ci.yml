@@ -76,8 +76,7 @@ jobs:
   publish-snapshot:
     needs: [ build ]
     timeout-minutes: 10 # reasonable limits to be on the safe side
-    # runs only if produced artifact version is related to SNAPSHOT
-    if: endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    if: endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT') # runs only if produced artifact version is related to SNAPSHOT
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -108,8 +107,7 @@ jobs:
   publish-final:
     needs: [ build ]
     timeout-minutes: 10 # reasonable limits to be on the safe side
-    # runs only if produced artifact version is final
-    if: !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT')
+    if: !endsWith(needs.build.outputs.artifact_version, '-SNAPSHOT') # runs only if produced artifact version is final
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
