@@ -14,7 +14,7 @@
 # - https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request
 # - https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request_target
 # - https://securitylab.github.com/research/github-actions-preventing-pwn-requests
-name: Parso Pull Request
+name: Pull Request
 on:
   # provides an ability to run workflows against pull requests from forks with token that has read access only
   # therefore there is no ability to comment pull request about related checkstyle errors and failed tests due to the security reasons
